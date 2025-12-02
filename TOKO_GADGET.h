@@ -2,85 +2,83 @@
 #define TOKO_GADGET_TUBES_H
 
 #include <string>
+#include <vector>
+#include <memory> 
+
 using namespace std;
 
-// batas maksimalnya disini guys
-#define MAX_PRODUK 100
-#define MAX_USER 50
-#define MAX_KATEGORI 100
-#define MAX_PRODUK_DI_KAT 50
-#define MAX_ANAK_KAT 20
+const string ADMIN_UNAME = "admin";
+const string ADMIN_PASS = "admin123";
 
 // user
 struct User {
     string username;
     string password;
-    bool isAdmin;
+    bool isAdmin = false;
 };
 
 // -produk disini guys
-struct Product {
-    int id;
-    string nama;
+struct ProductDetails {
     string spesifikasi;
-    int harga;
-    int stok;
+    int harga = 0; 
+    int stok = 0; 
 };
 
-// disini kategori hp ny
-struct Category {
-    int id;
-    string nama;
-
-    int parentId; // -1 jika root
-
-    int anakId[MAX_ANAK_KATEGORI];
-    int jumlahAnak;
-
-    int produkId[MAX_PRODUK_DI_KATEGORI];
-    int jumlahProduk;
+/**
+ *Node tunggal merepresentasikan Kategori, Sub-Kategori, Brand, atau Produk.
+ */
+struct Node {
+    int id; 
+    string data; // Nama Kategori atau Produk
+    ProductDetails details; // Diisi hanya jika ini adalah Produk akhir
+    
+    // Vektor dari Smart Pointer untuk implementasi Recursive Tree
+    vector<shared_ptr<Node>> children; 
+    
+    Node(int newId, const string& d) : id(newId), data(d) {}
 };
 
-// keranjang pke linked list ajah biar gmpang
-struct CartItem {
-    int productId;
-    int jumlah;
-    int hargaSatuan;
-    CartItem* next;
+
+class ProductTreeManager {
+private:
+    shared_ptr<Node> root; 
+    int nextId; // Counter untuk ID unik produk/kategori
+    
+public:
+    ProductTreeManager();
+
+    // AUTHENTIKASI (Hardcoded)
+    bool loginUser(const string& uname, const string& pw, User &hasil);
+
+    //  CSV
+    bool loadProdukCSV();
+    bool saveProdukCSV();
+
+    // CRUD (Operasi pada Tree)
+    // Penambahan node (Kategori/Produk) ke jalur hierarki
+    bool tambahNode(const string& parentPath, const string& nama, bool isProduct, const ProductDetails& details = {}); 
+    
+    // Mencari node/produk berdasarkan keyword
+    shared_ptr<Node> cariNode(const string& keyword);
+    
+    // Memperbarui data pada node
+    bool editNode(const string& targetPath, const string& newName, const ProductDetails& newDetails = {});
+    
+    // Menghapus node dan semua turunannya (recursive delete)
+    bool hapusNode(const string& targetPath);
+
+    // Memproses pembelian langsung dan mengurangi stok
+    bool beliProduk(int productId, int jumlah);
+    
+    // Menampilkan seluruh hierarki
+    void displayHierarchy() const;
+
+private:
+    // Fungsi pembantu untuk navigasi internal tree
+    shared_ptr<Node> findNodeByPath(shared_ptr<Node> current, const vector<string>& pathSegments, size_t index);
 };
- // auth
-bool loginUser(User users[], int jumlahUser, const string& uname, const string& pw, User &hasil);
-bool signupUser(User users[], int &jumlahUser, const string& uname, const string& pw);
-
-// disini buat crud nya
-Product* cariProduk(Product produk[], int jumlahProduk, int id);
-bool tambahProduk(Product produk[], int &jumlahProduk, const Product& p);
-bool editProduk(Product produk[], int jumlahProduk, const Product &p);
-bool hapusProduk(Product produk[], int &jumlahProduk, int id);
-
-// disini manajemen katgori
-bool tambahKategori(Category kategori[], int &jumlahKategori, int id, const string& nama, int parentId);
-Category* cariKategori(Category kategori[], int jumlahKategori, int id);
-bool hapusKategori(Category kategori[], int &jumlahKategori, int id);
-
-// hubungkan produk ke kategori
-bool tambahProdukKeKategori(Category kategori[], int jumlahKategori, int kategoriId, int productId);
-
-// ambil produk dalam kategori
-int ambilProdukDariKategori(Category* kat, int outProdukId[], int maxOut);
-
-int cariProdukKeyword(Product produk[], int jumlahProduk, const string& key, int hasilId[], int maxHasil);
-
-void tambahKeKeranjang(CartItem*& head, int productId, int jumlah, int harga);
-void tampilkanKeranjang(CartItem* head);
-bool checkout(CartItem*& head, Product produk[], int jumlahProduk);
-void hapusKeranjang(CartItem*& head);
-
-// buat database csv nya ini
-bool loadProdukCSV(const string& filename, Product produk[], int &jumlahProduk);
-bool saveProdukCSV(const string& filename, Product produk[], int jumlahProduk);
 
 void clearScreen();
 void tungguEnter();
 
-#endif
+#endif 
