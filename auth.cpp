@@ -3,6 +3,7 @@
 
 using namespace std;
 
+//  login user
 bool loginUser(User users[], int jumlahUser, const string& uname, const string& pw, User &hasil) {
     for (int i = 0; i < jumlahUser; i++) {
         if (users[i].username == uname && users[i].password == pw) {
@@ -13,12 +14,8 @@ bool loginUser(User users[], int jumlahUser, const string& uname, const string& 
     return false;
 }
 
+// registrasi user
 bool signupUser(User users[], int &jumlahUser, const string& uname, const string& pw) {
-    if (jumlahUser >= MAX_USER) {
-        cout << "Registrasi gagal: jumlah user telah mencapai batas maksimal." << endl;
-        return false; // Tidak bisa tambah user, sudah mencapai batas maksimal
-    }
-
     for (int i = 0 ; i < jumlahUser; i++) {
         if (users[i].username == uname) {
             cout << "Registrasi gagal: username sudah digunakan." << endl;
@@ -26,13 +23,11 @@ bool signupUser(User users[], int &jumlahUser, const string& uname, const string
         }
     }
 
-
+// nambah user
     users[jumlahUser].username = uname;
     users[jumlahUser].password = pw;
-    users[jumlahUser].isAdmin = false; // Default bukan admin
+    users[jumlahUser].isAdmin = false; // user bukan admin
     jumlahUser++;
-    return true;
-
     cout << "Registrasi berhasil!" << endl;
     return true;
 }
