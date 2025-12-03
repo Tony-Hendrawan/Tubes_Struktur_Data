@@ -16,6 +16,11 @@ bool loginUser(User users[], int jumlahUser, const string& uname, const string& 
 
 // registrasi user
 bool signupUser(User users[], int &jumlahUser, const string& uname, const string& pw) {
+    
+    if (jumlahUser >= MAX_USER) {
+        cout << "Registrasi gagal : User Penuh" << endl;
+    }
+
     for (int i = 0 ; i < jumlahUser; i++) {
         if (users[i].username == uname) {
             cout << "Registrasi gagal: username sudah digunakan." << endl;
