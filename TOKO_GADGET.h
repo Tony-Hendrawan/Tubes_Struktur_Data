@@ -34,10 +34,10 @@ struct Category {
 
     int parentId; // -1 jika root
 
-    int anakId[MAX_ANAK_KATEGORI];
+    int anakId[MAX_ANAK_KAT];
     int jumlahAnak;
 
-    int produkId[MAX_PRODUK_DI_KATEGORI];
+    int produkId[MAX_PRODUK_DI_KAT];
     int jumlahProduk;
 };
 
