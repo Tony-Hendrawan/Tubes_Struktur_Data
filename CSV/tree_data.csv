@@ -1,0 +1,32 @@
+Level;Nama;Parent;Harga;Stok;Spesifikasi
+Root;Gadget;NULL;;;
+Kategori Utama;Smartphone;Gadget;;;
+Kategori Utama;Laptop;Gadget;;;
+Kategori Utama;Tablet;Gadget;;;
+Sub-Kategori;Android;Smartphone;;;
+Sub-Kategori;iOS;Smartphone;;;
+Sub-Kategori;Gaming;Laptop;;;
+Sub-Kategori;Office;Laptop;;;
+Sub-Kategori;Android Tablet;Tablet;;;
+Sub-Kategori;iPad;Tablet;;;
+Brand;Samsung Phone;Android;;;
+Brand;Xiaomi;Android;;;
+Brand;Apple iPhone;iOS;;;
+Brand;Asus;Gaming;;;
+Brand;MSI;Gaming;;;
+Brand;Lenovo Laptop;Office;;;
+Brand;Samsung Tablet;Android Tablet;;;
+Brand;Lenovo Tablet;Android Tablet;;;
+Brand;Apple iPad;iPad;;;
+Produk;Samsung Galaxy A54;Samsung Phone;4500000;15;RAM 8/256, Chipset Exynos
+Produk;Samsung Galaxy A15;Samsung Phone;2999000;20;RAM 6/128, Chipset Helio G99
+Produk;Xiaomi Redmi Note 13;Xiaomi;2600000;30;RAM 6/128, AMOLED 90Hz
+Produk;iPhone 13;Apple iPhone;8999000;10;128GB, A15 Bionic
+Produk;iPhone 15;Apple iPhone;12999000;7;128GB, A16 Bionic
+Produk;Asus ROG Strix G15;Asus;18999000;5;Ryzen 7, RTX 3050Ti
+Produk;MSI Katana 15;MSI;15999000;6;i7 12th Gen, RTX 3050
+Produk;Lenovo ThinkPad L14;Lenovo Laptop;10500000;8;i5, RAM 16GB
+Produk;Samsung Galaxy Tab A9;Samsung Tablet;3500000;12;RAM 4/64, Layar 11 inch
+Produk;Lenovo Tab M10;Lenovo Tablet;2800000;18;RAM 4/64, Layar 10.1 inch
+Produk;iPad Air 5;Apple iPad;9999000;9;M1 Chip, 64GB, Layar 10.9 inch
+Produk;iPad Pro 11;Apple iPad;13999000;6;M2 Chip, 128GB, Layar 11 inch
