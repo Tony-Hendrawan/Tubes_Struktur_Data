@@ -4,31 +4,31 @@
 #include <limits>
 #include <cctype>
 
-void showChildrenMenu(NodePtr parent)
+void tampilkanMenuAnak(SimpulPtr induk)
 {
-    if (!parent)
+    if (!induk)
         return;
 
-    int index = 1;
-    for (auto &child : parent->children)
+    int indeks = 1;
+    for (auto &anakSimpul : induk->anak)
     {
-        std::string name =
-            (child->node_type == "Produk") ? child->product_data.name : child->data;
+        std::string nama =
+            (anakSimpul->tipe_simpul == "Produk") ? anakSimpul->data_produk.nama : anakSimpul->data;
 
-        std::cout << index++ << ". " << name << "\n";
+        std::cout << indeks++ << ". " << nama << "\n";
     }
 }
 
-NodePtr chooseChild(NodePtr parent)
+SimpulPtr pilihAnak(SimpulPtr induk)
 {
-    if (!parent)
+    if (!induk)
         return nullptr;
 
-    showChildrenMenu(parent);
+    tampilkanMenuAnak(induk);
 
-    int choice;
+    int pilihan;
     std::cout << "Pilih nomor: ";
-    if (!(std::cin >> choice))
+    if (!(std::cin >> pilihan))
     {
         std::cin.clear();
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
@@ -36,64 +36,109 @@ NodePtr chooseChild(NodePtr parent)
     }
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-    if (choice < 1 || choice > parent->children.size())
+    if (pilihan < 1 || pilihan > induk->anak.size())
     {
         std::cout << "Pilihan tidak ada\n";
         return nullptr;
     }
 
-    return parent->children[choice - 1];
+    return induk->anak[pilihan - 1];
 }
 
 // Menu
-void browseByHierarchy(NodePtr start)
-{
-    NodePtr current = start;
+SimpulPtr akar_global = nullptr;
 
-    while (current)
+void jelajahiHierarki(SimpulPtr mulai)
+{
+    SimpulPtr saatIni = mulai;
+    SimpulPtr akar = akar_global;
+
+    while (saatIni)
     {
-        NodePtr next = chooseChild(current);
-        if (!next)
+        SimpulPtr berikutnya = pilihAnak(saatIni);
+        if (!berikutnya)
             return;
 
-        if (next->node_type == "Produk")
+        if (berikutnya->tipe_simpul == "Produk")
         {
             std::cout << "\nDETAIL PRODUK \n";
-            std::cout << "Nama  : " << next->product_data.name << "\n";
-            std::cout << "Harga : " << next->product_data.price << "\n";
-            std::cout << "Stok  : " << next->product_data.stock << "\n";
-            std::cout << "Spec  : " << next->product_data.specification << "\n";
+            std::cout << "Nama  : " << berikutnya->data_produk.nama << "\n";
+            std::cout << "Harga : Rp " << berikutnya->data_produk.harga << "\n";
+            std::cout << "Stok  : " << berikutnya->data_produk.stok << "\n";
+            std::cout << "Spec  : " << berikutnya->data_produk.spesifikasi << "\n";
+
+            std::cout << "\n1. Beli Produk\n0. Kembali\nPilih: ";
+            int beli;
+            std::cin >> beli;
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+            if (beli == 1)
+            {
+                if (beliProduk(berikutnya))
+                    simpanTreeKeCSV(akar, "CSV/tree_data.csv");
+            }
             return;
         }
 
-        current = next;
+        saatIni = berikutnya;
     }
 }
 
-// menu pembeli
-void showBuyerMenu(NodePtr root)
+// pilih level untuk admin
+int pilihLevel()
+{
+    std::cout << "\nPilih level:\n";
+    std::cout << "1. Kategori Utama\n";
+    std::cout << "2. Sub-Kategori\n";
+    std::cout << "3. Brand\n";
+    std::cout << "4. Produk\n";
+    std::cout << "0. Kembali\n";
+    std::cout << "Pilih: ";
+
+    int pilihan;
+    if (!(std::cin >> pilihan))
+    {
+        std::cin.clear();
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        return -1;
+    }
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+    return pilihan;
+}
+
+std::string dapatkanTipeLevel(int level)
+{
+    switch (level)
+    {
+    case 1:
+        return "Kategori Utama";
+    case 2:
+        return "Sub-Kategori";
+    case 3:
+        return "Brand";
+    case 4:
+        return "Produk";
+    default:
+        return "";
+    }
+}
+
+// menu admin
+void tampilkanMenuAdmin(SimpulPtr akar)
 {
     while (true)
     {
-        std::cout << "\nMENU PEMBELI\n";
-        std::cout << "Pilih kategori utama:\n";
-
-        int index = 1;
-        for (auto &child : root->children)
-        {
-            std::cout << index << ". " << child->data << "\n";
-            index++;
-        }
-
-        // cari produk
-        std::cout << index << ". Cari Produk\n";
-        int searchMenu = index;
-
+        std::cout << "\nMENU ADMIN\n";
+        std::cout << "1. Lihat Tree\n";
+        std::cout << "2. Edit\n";
+        std::cout << "3. Hapus\n";
+        std::cout << "4. Tambah\n";
         std::cout << "0. Logout\n";
         std::cout << "Pilih menu: ";
 
-        int choice;
-        if (!(std::cin >> choice))
+        int pilihan;
+        if (!(std::cin >> pilihan))
         {
             std::cin.clear();
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
@@ -101,18 +146,141 @@ void showBuyerMenu(NodePtr root)
         }
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-        if (choice == 0)
+        if (pilihan == 0)
             return;
 
-        if (choice == searchMenu)
+        if (pilihan == 1)
         {
+            std::cout << "\n--- STRUKTUR TREE ---\n";
+            tampilkanTree(akar, 0);
             continue;
         }
 
-        if (choice >= 1 && choice < searchMenu)
+        if (pilihan == 2)
         {
-            NodePtr kategori = root->children[choice - 1];
-            browseByHierarchy(kategori);
+            int level = pilihLevel();
+            if (level == 0 || level == -1)
+                continue;
+
+            std::string tipe = dapatkanTipeLevel(level);
+            std::string nama;
+            std::cout << "Masukkan nama " << tipe << " yang akan diedit: ";
+            std::getline(std::cin, nama);
+
+            SimpulPtr simpul = cariSimpul(akar, nama);
+            if (!simpul)
+            {
+                std::cout << "Data tidak ditemukan.\n";
+                continue;
+            }
+
+            if (simpul->tipe_simpul != tipe)
+            {
+                std::cout << "Level tidak sesuai.\n";
+                continue;
+            }
+
+            editSimpul(simpul);
+            simpanTreeKeCSV(akar, "CSV/tree_data.csv");
+            continue;
+        }
+
+        if (pilihan == 3)
+        {
+            int level = pilihLevel();
+            if (level == 0 || level == -1)
+                continue;
+
+            std::string tipe = dapatkanTipeLevel(level);
+            std::string nama;
+            std::cout << "Masukkan nama " << tipe << " yang akan dihapus: ";
+            std::getline(std::cin, nama);
+
+            SimpulPtr simpul = cariSimpul(akar, nama);
+            if (!simpul)
+            {
+                std::cout << "Data tidak ditemukan.\n";
+                continue;
+            }
+
+            if (simpul->tipe_simpul != tipe)
+            {
+                std::cout << "Level tidak sesuai.\n";
+                continue;
+            }
+
+            if (hapusSimpul(akar, nama))
+                simpanTreeKeCSV(akar, "CSV/tree_data.csv");
+            continue;
+        }
+
+        if (pilihan == 4)
+        {
+            int level = pilihLevel();
+            if (level == 0 || level == -1)
+                continue;
+
+            std::string tipe = dapatkanTipeLevel(level);
+            std::string namaInduk;
+            std::cout << "Masukkan nama parent: ";
+            std::getline(std::cin, namaInduk);
+
+            if (tambahSimpul(akar, namaInduk, tipe))
+                simpanTreeKeCSV(akar, "CSV/tree_data.csv");
+            continue;
+        }
+
+        std::cout << "Pilihan tidak valid.\n";
+    }
+}
+
+// menu pembeli
+void tampilkanMenuPembeli(SimpulPtr akar)
+{
+    while (true)
+    {
+        std::cout << "\nMENU PEMBELI\n";
+        std::cout << "Pilih kategori utama:\n";
+
+        int indeks = 1;
+        for (auto &anakSimpul : akar->anak)
+        {
+            std::cout << indeks << ". " << anakSimpul->data << "\n";
+            indeks++;
+        }
+
+        // cari produk
+        std::cout << indeks << ". Cari Produk\n";
+        int menuCari = indeks;
+
+        std::cout << "0. Logout\n";
+        std::cout << "Pilih menu: ";
+
+        int pilihan;
+        if (!(std::cin >> pilihan))
+        {
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            continue;
+        }
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+        if (pilihan == 0)
+            return;
+
+        if (pilihan == menuCari)
+        {
+            std::string katakunci;
+            std::cout << "Masukkan keyword: ";
+            std::getline(std::cin, katakunci);
+            cariProduk(akar, katakunci);
+            continue;
+        }
+
+        if (pilihan >= 1 && pilihan < menuCari)
+        {
+            SimpulPtr kategori = akar->anak[pilihan - 1];
+            jelajahiHierarki(kategori);
             continue;
         }
 
@@ -122,14 +290,15 @@ void showBuyerMenu(NodePtr root)
 
 int main()
 {
-    NodePtr root = std::make_shared<Node>("", "Root");
-    loadTreeFromCSV(root, "CSV/tree_data.csv");
+    SimpulPtr akar = std::make_shared<Simpul>("", "Root");
+    muatTreeDariCSV(akar, "CSV/tree_data.csv");
+    akar_global = akar;
 
     while (true)
     {
-        int role = selectInitialRole();
+        int peran = pilihPeranAwal();
         // pembeli
-        if (role == 1)
+        if (peran == 1)
         {
             int sub;
             std::cout << "1. Login\n2. Signup\nPilih: ";
@@ -137,17 +306,19 @@ int main()
             std::cin.ignore();
 
             if (sub == 1)
-                loginUser(PEMBELI);
+                loginPengguna(PEMBELI);
             else
-                signupUser();
+                daftarPengguna();
 
-            showBuyerMenu(root);
+            tampilkanMenuPembeli(akar);
         }
 
         // admin
-        else if (role == 2)
+        else if (peran == 2)
         {
-            loginUser(ADMIN);
+            Pengguna admin = loginPengguna(ADMIN);
+            if (admin.peran == ADMIN)
+                tampilkanMenuAdmin(akar);
         }
     }
 
