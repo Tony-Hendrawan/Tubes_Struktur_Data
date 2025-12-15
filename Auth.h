@@ -3,21 +3,21 @@
 
 #include <string>
 
-enum UserRole
+enum PeranPengguna
 {
-    UNKNOWN,
+    TIDAK_DIKETAHUI,
     PEMBELI,
     ADMIN
 };
 
-struct User
+struct Pengguna
 {
-    std::string username;
-    UserRole role = UNKNOWN;
+    std::string nama_pengguna;
+    PeranPengguna peran = TIDAK_DIKETAHUI;
 };
 
-int selectInitialRole();
-User loginUser(UserRole role);
-User signupUser();
+int pilihPeranAwal();
+Pengguna loginPengguna(PeranPengguna peran);
+Pengguna daftarPengguna();
 
 #endif
