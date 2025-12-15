@@ -222,8 +222,17 @@ void tampilkanMenuAdmin(SimpulPtr akar)
 
             std::string tipe = dapatkanTipeLevel(level);
             std::string namaInduk;
-            std::cout << "Masukkan nama parent: ";
-            std::getline(std::cin, namaInduk);
+
+            // Kategori Utama langsung ditambahkan ke root
+            if (level == 1)
+            {
+                namaInduk = akar->data;
+            }
+            else
+            {
+                std::cout << "Masukkan nama parent: ";
+                std::getline(std::cin, namaInduk);
+            }
 
             if (tambahSimpul(akar, namaInduk, tipe))
                 simpanTreeKeCSV(akar, "CSV/tree_data.csv");
