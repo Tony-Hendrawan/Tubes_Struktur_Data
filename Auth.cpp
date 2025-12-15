@@ -1,11 +1,42 @@
-// Auth.cpp
 #include "Auth.h"
 #include <iostream>
 #include <map>
 #include <limits>
 #include <string>
 
+#include <conio.h>
 static std::map<std::string, std::string> USERS = {};
+
+std::string inputPasswordMasked()
+{
+    std::string password;
+    char ch;
+
+    while (true)
+    {
+        ch = _getch(); // tidak menampilkan input ke layar
+
+        if (ch == 13)
+        {
+            std::cout << std::endl;
+            break;
+        }
+        else if (ch == 8)
+        {
+            if (!password.empty())
+            {
+                std::cout << "\b \b";
+                password.pop_back();
+            }
+        }
+        else
+        {
+            password.push_back(ch);
+            std::cout << '*';
+        }
+    }
+    return password;
+}
 
 // Memilih role awal
 int selectInitialRole()
@@ -57,7 +88,7 @@ User loginUser(UserRole role)
         while (true)
         {
             std::cout << "Password: ";
-            std::getline(std::cin, password);
+            password = inputPasswordMasked();
             if (!password.empty())
                 break;
         }
@@ -118,7 +149,7 @@ User signupUser()
     while (true)
     {
         std::cout << "Masukkan Password Baru: ";
-        std::getline(std::cin, new_password);
+        new_password = inputPasswordMasked();
 
         if (!new_password.empty())
             break;
