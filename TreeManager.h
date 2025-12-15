@@ -5,6 +5,7 @@
 #include <string>
 
 // Manajemen tree
+bool processBuy(NodePtr productNode, int quantity, NodePtr root);
 void addChild(NodePtr parent, NodePtr child);
 void displayTree(NodePtr node, int level = 0);
 NodePtr findNode(NodePtr root, const std::string &target_name);
