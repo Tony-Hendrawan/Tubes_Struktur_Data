@@ -3,46 +3,41 @@
 #include <map>
 #include <limits>
 #include <string>
-
 #include <conio.h>
-static std::map<std::string, std::string> USERS = {};
 
-std::string inputPasswordMasked()
+static std::map<std::string, std::string> DAFTAR_PENGGUNA = {};
+
+// Input password
+std::string inputKataSandi()
 {
-    std::string password;
-    char ch;
+    std::string kataSandi;
+    char karakter;
 
-    while (true)
+    while ((karakter = _getch()) != '\r')
     {
-        ch = _getch(); // tidak menampilkan input ke layar
-
-        if (ch == 13)
+        if (karakter == '\b')
         {
-            std::cout << std::endl;
-            break;
-        }
-        else if (ch == 8)
-        {
-            if (!password.empty())
+            if (!kataSandi.empty())
             {
+                kataSandi.pop_back();
                 std::cout << "\b \b";
-                password.pop_back();
             }
         }
         else
         {
-            password.push_back(ch);
+            kataSandi += karakter;
             std::cout << '*';
         }
     }
-    return password;
+    std::cout << "\n";
+    return kataSandi;
 }
 
-// Memilih role awal
-int selectInitialRole()
+// Memilih peran awal
+int pilihPeranAwal()
 {
-    int choice = 0;
-    while (choice != 1 && choice != 2)
+    int pilihan = 0;
+    while (pilihan != 1 && pilihan != 2)
     {
         std::cout << "\nSELAMAT DATANG DI TOKO GADGET\n\n";
         std::cout << "Masuk sebagai:\n";
@@ -50,94 +45,94 @@ int selectInitialRole()
         std::cout << "2. Admin\n";
         std::cout << "Pilih (1/2): ";
 
-        if (!(std::cin >> choice))
+        if (!(std::cin >> pilihan))
         {
             std::cin.clear();
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-            choice = 0;
+            pilihan = 0;
         }
         else
         {
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         }
     }
-    return choice;
+    return pilihan;
 }
 
-// Login User
-User loginUser(UserRole role)
+// Login Pengguna
+Pengguna loginPengguna(PeranPengguna peran)
 {
-    User current_user;
-    std::string username, password;
-    std::string role_str = (role == ADMIN) ? "Admin" : "Pembeli";
+    Pengguna penggunaSaatIni;
+    std::string namaPengguna, kataSandi;
+    std::string strPeran = (peran == ADMIN) ? "Admin" : "Pembeli";
 
     while (true)
     {
-        std::cout << "\n--- Login " << role_str << " ---\n";
+        std::cout << "\n--- Login " << strPeran << " ---\n";
 
-        // Username
+        // Nama Pengguna
         while (true)
         {
             std::cout << "Username: ";
-            std::getline(std::cin, username);
-            if (!username.empty())
+            std::getline(std::cin, namaPengguna);
+            if (!namaPengguna.empty())
                 break;
         }
 
-        // Password
+        // Kata Sandi
         while (true)
         {
             std::cout << "Password: ";
-            password = inputPasswordMasked();
-            if (!password.empty())
+            kataSandi = inputKataSandi();
+            if (!kataSandi.empty())
                 break;
         }
 
         // login admin
-        if (role == ADMIN)
+        if (peran == ADMIN)
         {
-            if (username == "admin" && password == "admin123")
+            if (namaPengguna == "admin" && kataSandi == "admin123")
             {
-                current_user.username = username;
-                current_user.role = ADMIN;
+                penggunaSaatIni.nama_pengguna = namaPengguna;
+                penggunaSaatIni.peran = ADMIN;
                 std::cout << "Login Berhasil sebagai Admin\n";
-                return current_user;
+                return penggunaSaatIni;
             }
 
             std::cout << "Admin salah. Coba lagi.\n";
             continue;
         }
 
-        // login oembveli
-        auto it = USERS.find(username);
+        // login pembeli
+        auto it = DAFTAR_PENGGUNA.find(namaPengguna);
 
-        if (it != USERS.end() && it->second == password)
+        if (it != DAFTAR_PENGGUNA.end() && it->second == kataSandi)
         {
-            current_user.username = username;
-            current_user.role = PEMBELI;
+            penggunaSaatIni.nama_pengguna = namaPengguna;
+            penggunaSaatIni.peran = PEMBELI;
             std::cout << "Login Berhasil sebagai Pembeli\n";
-            return current_user;
+            return penggunaSaatIni;
         }
 
         std::cout << "Username atau Password salah. Coba lagi.\n";
     }
 }
 
-// signup pembeli
-User signupUser()
+// Daftar pembeli
+Pengguna daftarPengguna()
 {
-    User current_user;
-    std::string new_username, new_password;
+    Pengguna penggunaSaatIni;
+    std::string namaBaru, kataSandiBaru;
 
     std::cout << "\n--- Pendaftaran Akun Pembeli ---\n";
 
-    // Username baru
+    // Nama pengguna baru
     while (true)
     {
         std::cout << "Masukkan Username Baru: ";
-        std::getline(std::cin, new_username);
+        std::getline(std::cin, namaBaru);
 
-        if (new_username.empty())
+        if (namaBaru.empty())
         {
             continue;
         }
@@ -145,21 +140,21 @@ User signupUser()
         break;
     }
 
-    // Password baru
+    // Kata sandi baru
     while (true)
     {
         std::cout << "Masukkan Password Baru: ";
-        new_password = inputPasswordMasked();
+        kataSandiBaru = inputKataSandi();
 
-        if (!new_password.empty())
+        if (!kataSandiBaru.empty())
             break;
     }
 
     // Simpan ke map
-    USERS[new_username] = new_password;
+    DAFTAR_PENGGUNA[namaBaru] = kataSandiBaru;
 
-    current_user.username = new_username;
-    current_user.role = PEMBELI;
+    penggunaSaatIni.nama_pengguna = namaBaru;
+    penggunaSaatIni.peran = PEMBELI;
 
-    return current_user;
+    return penggunaSaatIni;
 }
