@@ -5,35 +5,35 @@
 #include <vector>
 #include <memory>
 
-struct ProductInfo
+struct InfoProduk
 {
-    std::string name;
-    long long price = 0;
-    int stock = 0;
-    std::string specification;
+    std::string nama;
+    long long harga = 0;
+    int stok = 0;
+    std::string spesifikasi;
 };
 
-struct Node;
-typedef std::shared_ptr<Node> NodePtr;
+struct Simpul;
+typedef std::shared_ptr<Simpul> SimpulPtr;
 
-struct Node
+struct Simpul
 {
     std::string data;
-    std::string node_type; // semua kategori
-    ProductInfo product_data;
-    std::vector<NodePtr> children;
-    NodePtr parent;
+    std::string tipe_simpul;
+    InfoProduk data_produk;
+    std::vector<SimpulPtr> anak;
+    SimpulPtr induk;
 
-    Node(const std::string &val = "", const std::string &type = "Kategori")
-        : data(val), node_type(type), parent(nullptr) {}
+    Simpul(const std::string &nilai = "", const std::string &tipe = "Kategori")
+        : data(nilai), tipe_simpul(tipe), induk(nullptr) {}
 
-    Node(const std::string &name, long long price, int stock, const std::string &spec = "")
-        : data(""), node_type("Produk"), parent(nullptr)
+    Simpul(const std::string &nama, long long harga, int stok, const std::string &spec = "")
+        : data(""), tipe_simpul("Produk"), induk(nullptr)
     {
-        product_data.name = name;
-        product_data.price = price;
-        product_data.stock = stock;
-        product_data.specification = spec;
+        data_produk.nama = nama;
+        data_produk.harga = harga;
+        data_produk.stok = stok;
+        data_produk.spesifikasi = spec;
     }
 };
 
