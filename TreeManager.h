@@ -5,19 +5,23 @@
 #include <string>
 
 // Manajemen tree
-void addChild(NodePtr parent, NodePtr child);
-void displayTree(NodePtr node, int level = 0);
-NodePtr findNode(NodePtr root, const std::string &target_name);
-bool deleteNode(NodePtr root, const std::string &target_name);
-void editNode(NodePtr node);
+void tambahAnak(SimpulPtr induk, SimpulPtr anak);
+void tampilkanTree(SimpulPtr simpul, int level = 0);
+SimpulPtr cariSimpul(SimpulPtr akar, const std::string &target);
+bool hapusSimpul(SimpulPtr akar, const std::string &target);
+void editSimpul(SimpulPtr simpul);
+bool tambahSimpul(SimpulPtr akar, const std::string &namaInduk, const std::string &tipeSimpul);
+void cariProduk(SimpulPtr akar, const std::string &katakunci);
+bool beliProduk(SimpulPtr produk);
+void kumpulkanSemuaSimpul(SimpulPtr s, std::vector<SimpulPtr> &hasil);
 
 // load/save seluruh tree
-void loadTreeFromCSV(NodePtr root, const std::string &filename);
-void saveTreeToCSV(NodePtr root, const std::string &filename);
+void muatTreeDariCSV(SimpulPtr akar, const std::string &namaFile);
+void simpanTreeKeCSV(SimpulPtr akar, const std::string &namaFile);
 
 // menu
-void showChildrenMenu(NodePtr parent);
-NodePtr chooseChild(NodePtr parent);
-void browseByHierarchy(NodePtr root);
+void tampilkanMenuAnak(SimpulPtr induk);
+SimpulPtr pilihAnak(SimpulPtr induk);
+void jelajahiHierarki(SimpulPtr akar);
 
-#endif // TREEMANAGER_H
+#endif
