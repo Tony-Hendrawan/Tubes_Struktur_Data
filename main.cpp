@@ -124,6 +124,34 @@ std::string dapatkanTipeLevel(int level)
     }
 }
 
+// Mendapatkan tipe parent yang valid untuk setiap level
+std::string dapatkanTipeParentValid(int level)
+{
+    switch (level)
+    {
+    case 1:
+        return "Root";
+    case 2:
+        return "Kategori Utama";
+    case 3:
+        return "Sub-Kategori";
+    case 4:
+        return "Brand";
+    default:
+        return "";
+    }
+}
+
+// Validasi apakah parent sesuai dengan hierarki
+bool validasiParent(SimpulPtr simpulParent, int levelAnak)
+{
+    if (!simpulParent)
+        return false;
+
+    std::string tipeParentValid = dapatkanTipeParentValid(levelAnak);
+    return simpulParent->tipe_simpul == tipeParentValid;
+}
+
 // menu admin
 void tampilkanMenuAdmin(SimpulPtr akar)
 {
@@ -221,6 +249,7 @@ void tampilkanMenuAdmin(SimpulPtr akar)
                 continue;
 
             std::string tipe = dapatkanTipeLevel(level);
+            std::string tipeParent = dapatkanTipeParentValid(level);
             std::string namaInduk;
 
             // Kategori Utama langsung ditambahkan ke root
@@ -230,8 +259,21 @@ void tampilkanMenuAdmin(SimpulPtr akar)
             }
             else
             {
-                std::cout << "Masukkan nama parent: ";
+                std::cout << "Masukkan nama parent (" << tipeParent << "): ";
                 std::getline(std::cin, namaInduk);
+
+                SimpulPtr simpulParent = cariSimpul(akar, namaInduk);
+                if (!simpulParent)
+                {
+                    std::cout << "Parent tidak ditemukan.\n";
+                    continue;
+                }
+
+                if (!validasiParent(simpulParent, level))
+                {
+                    std::cout << "Parent harus bertipe " << tipeParent << ".\n";
+                    continue;
+                }
             }
 
             if (tambahSimpul(akar, namaInduk, tipe))
