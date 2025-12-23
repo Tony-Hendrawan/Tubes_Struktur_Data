@@ -1,12 +1,88 @@
-// TreeManager.cpp
 #include "TreeManager.h"
 #include <iostream>
 #include <algorithm>
 #include <fstream>
 #include <sstream>
 #include <cctype>
+#include <iomanip>
+#include <limits>
+#include <vector>
 
-// Menambah anak ke simpul
+// =========================================================
+// BAGIAN INTERNAL: LOGIKA TAMPILAN TABEL
+// =========================================================
+
+void cetakGarisTabel(int lebarKolom[])
+{
+    std::cout << "+";
+    for (int i = 0; i < 6; i++)
+    {
+        for (int j = 0; j < lebarKolom[i] + 2; j++)
+            std::cout << "-";
+        std::cout << "+";
+    }
+    std::cout << "\n";
+}
+
+void prosesTampilanTabel(SimpulPtr s, std::vector<std::string> path, int lebarKolom[])
+{
+    if (!s)
+        return;
+
+    std::string namaData = (s->tipe_simpul == "Produk") ? s->data_produk.nama : s->data;
+
+    // Update path silsilah (Root, Utama, Sub, Brand)
+    if (s->tipe_simpul == "Root")
+    {
+        path[0] = (s->data.empty()) ? "GADGET" : s->data;
+    }
+    else if (s->tipe_simpul == "Kategori Utama")
+    {
+        path[1] = namaData;
+    }
+    else if (s->tipe_simpul == "Sub-Kategori")
+    {
+        path[2] = namaData;
+    }
+    else if (s->tipe_simpul == "Brand")
+    {
+        path[3] = namaData;
+    }
+
+    if (s->tipe_simpul == "Produk")
+    {
+        std::cout << "| " << std::left << std::setw(lebarKolom[0]) << path[0]
+                  << " | " << std::left << std::setw(lebarKolom[1]) << path[1]
+                  << " | " << std::left << std::setw(lebarKolom[2]) << path[2]
+                  << " | " << std::left << std::setw(lebarKolom[3]) << path[3]
+                  << " | " << std::left << std::setw(lebarKolom[4]) << s->data_produk.nama
+                  << " | " << std::right << std::setw(lebarKolom[5]) << s->data_produk.harga
+                  << " |\n";
+    }
+    else if (s->anak.empty() && s->tipe_simpul != "Root")
+    {
+        // Cetak kategori meskipun kosong (belum ada produk)
+        std::cout << "| " << std::left << std::setw(lebarKolom[0]) << path[0]
+                  << " | " << std::left << std::setw(lebarKolom[1]) << path[1]
+                  << " | " << std::left << std::setw(lebarKolom[2]) << path[2]
+                  << " | " << std::left << std::setw(lebarKolom[3]) << path[3]
+                  << " | " << std::left << std::setw(lebarKolom[4]) << "(Belum ada produk)"
+                  << " | " << std::right << std::setw(lebarKolom[5]) << "-"
+                  << " |\n";
+    }
+    else
+    {
+        for (auto &anakSimpul : s->anak)
+        {
+            prosesTampilanTabel(anakSimpul, path, lebarKolom);
+        }
+    }
+}
+
+// =========================================================
+// IMPLEMENTASI FUNGSI PUBLIC
+// =========================================================
+
 void tambahAnak(SimpulPtr induk, SimpulPtr anak)
 {
     if (induk && anak)
@@ -16,431 +92,266 @@ void tambahAnak(SimpulPtr induk, SimpulPtr anak)
     }
 }
 
-// Menampilkan Tree dengan struktur horizontal
-void tampilkanTree(SimpulPtr simpul, int level, std::string awalan, bool terakhir)
+void tampilkanTree(SimpulPtr simpul, int levelIgnore)
 {
     if (!simpul)
         return;
 
-    // Tampilkan awalan dan koneksi
-    std::cout << awalan;
+    int lebarKolom[] = {10, 15, 15, 12, 22, 12};
+    std::vector<std::string> path(4, " - ");
 
-    if (level > 0)
-    {
-        if (terakhir)
-            std::cout << "+-- ";
-        else
-            std::cout << "+-- ";
-    }
+    std::cout << "\n"
+              << std::setw(50) << "--- DAFTAR INVENTARIS TOKO GADGET ---" << "\n";
+    cetakGarisTabel(lebarKolom);
+    std::cout << "| " << std::left << std::setw(lebarKolom[0]) << "ROOT"
+              << " | " << std::left << std::setw(lebarKolom[1]) << "KATEGORI"
+              << " | " << std::left << std::setw(lebarKolom[2]) << "SUB-KAT"
+              << " | " << std::left << std::setw(lebarKolom[3]) << "BRAND"
+              << " | " << std::left << std::setw(lebarKolom[4]) << "NAMA PRODUK"
+              << " | " << std::left << std::setw(lebarKolom[5]) << "HARGA (Rp)" << " |\n";
+    cetakGarisTabel(lebarKolom);
 
-    // Tampilkan data simpul
-    if (simpul->tipe_simpul == "Produk")
-    {
-        std::cout << "[PRODUK] " << simpul->data_produk.nama
-                  << " (Rp " << simpul->data_produk.harga
-                  << ", Stok: " << simpul->data_produk.stok
-                  << ", Spec: " << simpul->data_produk.spesifikasi << ")\n";
-    }
-    else if (simpul->tipe_simpul == "Root")
-    {
-        std::cout << "[ROOT] " << simpul->data << "\n";
-    }
-    else
-    {
-        std::cout << "[" << simpul->tipe_simpul << "] " << simpul->data << "\n";
-    }
+    prosesTampilanTabel(simpul, path, lebarKolom);
 
-    // Siapkan awalan untuk anak
-    std::string awalanBaru = awalan;
-    if (level > 0)
-    {
-        if (terakhir)
-            awalanBaru += "    ";
-        else
-            awalanBaru += "|   ";
-    }
-
-    // Tampilkan semua anak
-    for (size_t i = 0; i < simpul->anak.size(); i++)
-    {
-        bool anakTerakhir = (i == simpul->anak.size() - 1);
-        tampilkanTree(simpul->anak[i], level + 1, awalanBaru, anakTerakhir);
-    }
+    cetakGarisTabel(lebarKolom);
+    std::cout << std::endl;
 }
 
-// Overload untuk pemanggilan sederhana
-void tampilkanTree(SimpulPtr simpul, int level)
-{
-    tampilkanTree(simpul, 0, "", true);
-}
-
-// Mencari Simpul
 SimpulPtr cariSimpul(SimpulPtr akar, const std::string &target)
 {
     if (!akar)
         return nullptr;
 
-    std::string saatIni =
-        (akar->tipe_simpul == "Produk") ? akar->data_produk.nama : akar->data;
+    std::string saatIni = (akar->tipe_simpul == "Produk") ? akar->data_produk.nama : akar->data;
+    std::string s1 = saatIni, s2 = target;
+    std::transform(s1.begin(), s1.end(), s1.begin(), ::tolower);
+    std::transform(s2.begin(), s2.end(), s2.begin(), ::tolower);
 
-    std::string saatIniKecil = saatIni;
-    std::string targetKecil = target;
-
-    std::transform(saatIniKecil.begin(), saatIniKecil.end(), saatIniKecil.begin(), ::tolower);
-    std::transform(targetKecil.begin(), targetKecil.end(), targetKecil.begin(), ::tolower);
-
-    if (saatIniKecil == targetKecil)
+    if (s1 == s2)
         return akar;
 
-    for (auto &anakSimpul : akar->anak)
-        if (auto ditemukan = cariSimpul(anakSimpul, target))
-            return ditemukan;
-
+    for (auto &a : akar->anak)
+    {
+        SimpulPtr res = cariSimpul(a, target);
+        if (res)
+            return res;
+    }
     return nullptr;
 }
 
-// Menghapus Simpul
 bool hapusSimpul(SimpulPtr akar, const std::string &target)
 {
     if (!akar)
         return false;
-
-    SimpulPtr simpulTarget = cariSimpul(akar, target);
-    if (!simpulTarget)
+    SimpulPtr targetS = cariSimpul(akar, target);
+    if (!targetS || !targetS->induk)
     {
-        std::cout << "Simpul tidak ditemukan.\n";
+        std::cout << "Gagal: Data tidak ditemukan atau tidak bisa hapus root.\n";
         return false;
     }
 
-    if (!simpulTarget->induk)
-    {
-        std::cout << "Tidak bisa hapus root.\n";
-        return false;
-    }
+    auto &v = targetS->induk->anak;
+    v.erase(std::remove_if(v.begin(), v.end(), [&](SimpulPtr s)
+                           {
+        std::string n = (s->tipe_simpul == "Produk") ? s->data_produk.nama : s->data;
+        return n == targetS->data || n == targetS->data_produk.nama; }),
+            v.end());
 
-    auto indukSimpul = simpulTarget->induk;
-    auto &daftarAnak = indukSimpul->anak;
-
-    daftarAnak.erase(
-        std::remove_if(daftarAnak.begin(), daftarAnak.end(),
-                       [&](SimpulPtr s)
-                       {
-                           std::string namaSimpul =
-                               (s->tipe_simpul == "Produk") ? s->data_produk.nama : s->data;
-                           std::string namaKecil = namaSimpul, targetKecil = target;
-                           std::transform(namaKecil.begin(), namaKecil.end(), namaKecil.begin(), ::tolower);
-                           std::transform(targetKecil.begin(), targetKecil.end(), targetKecil.begin(), ::tolower);
-                           return namaKecil == targetKecil;
-                       }),
-        daftarAnak.end());
-
-    std::cout << "Simpul berhasil dihapus.\n";
+    std::cout << "Data berhasil dihapus.\n";
     return true;
 }
 
-// Edit Simpul
 void editSimpul(SimpulPtr simpul)
 {
     if (!simpul)
         return;
-
     if (simpul->tipe_simpul == "Produk")
     {
-        std::string namaBaru;
-        std::cout << "Nama baru (kosong = skip): ";
-        std::getline(std::cin, namaBaru);
-        if (!namaBaru.empty())
-            simpul->data_produk.nama = namaBaru;
+        std::string n;
+        std::cout << "Nama baru (kosong skip): ";
+        std::getline(std::cin, n);
+        if (!n.empty())
+            simpul->data_produk.nama = n;
 
-        long long hargaBaru;
+        long long h;
         std::cout << "Harga baru (0 skip): ";
-        std::cin >> hargaBaru;
-        if (hargaBaru > 0)
-            simpul->data_produk.harga = hargaBaru;
-        std::cin.ignore();
-
-        int stokBaru;
-        std::cout << "Stok baru (-1 skip): ";
-        std::cin >> stokBaru;
-        if (stokBaru >= 0)
-            simpul->data_produk.stok = stokBaru;
-        std::cin.ignore();
-
-        std::string specBaru;
-        std::cout << "Spec baru (kosong skip): ";
-        std::getline(std::cin, specBaru);
-        if (!specBaru.empty())
-            simpul->data_produk.spesifikasi = specBaru;
+        if (std::cin >> h && h > 0)
+            simpul->data_produk.harga = h;
+        std::cin.clear();
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     }
     else
     {
-        std::string namaBaru;
+        std::string n;
         std::cout << "Nama baru: ";
-        std::getline(std::cin, namaBaru);
-        if (!namaBaru.empty())
-            simpul->data = namaBaru;
+        std::getline(std::cin, n);
+        if (!n.empty())
+            simpul->data = n;
     }
-
-    std::cout << "Data berhasil diperbarui.\n";
+    std::cout << "Berhasil diperbarui.\n";
 }
 
-// Tambah Simpul
+// FUNGSI TAMBAH SIMPUL DENGAN VALIDASI DUPLIKAT
 bool tambahSimpul(SimpulPtr akar, const std::string &namaInduk, const std::string &tipeSimpul)
 {
     SimpulPtr induk = cariSimpul(akar, namaInduk);
     if (!induk)
     {
-        std::cout << "Parent tidak ditemukan.\n";
+        std::cout << "Gagal: Parent tidak ditemukan.\n";
+        return false;
+    }
+
+    std::string namaBaru;
+    std::cout << "Masukkan nama " << tipeSimpul << " baru: ";
+    std::getline(std::cin, namaBaru);
+
+    // VALIDASI DUPLIKAT: Cek apakah nama sudah ada di sistem
+    if (cariSimpul(akar, namaBaru))
+    {
+        std::cout << "Gagal: Nama '" << namaBaru << "' sudah ada. Gunakan nama unik.\n";
         return false;
     }
 
     if (tipeSimpul == "Produk")
     {
-        std::string nama, spec;
-        long long harga;
-        int stok;
-
-        std::cout << "Nama produk: ";
-        std::getline(std::cin, nama);
-        if (nama.empty())
-            return false;
-
+        long long h;
+        int st;
+        std::string sp;
         std::cout << "Harga: ";
-        std::cin >> harga;
-        std::cin.ignore();
-
+        std::cin >> h;
         std::cout << "Stok: ";
-        std::cin >> stok;
-        std::cin.ignore();
-
+        std::cin >> st;
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         std::cout << "Spesifikasi: ";
-        std::getline(std::cin, spec);
+        std::getline(std::cin, sp);
 
-        SimpulPtr simpulBaru = std::make_shared<Simpul>(nama, harga, stok, spec);
-        tambahAnak(induk, simpulBaru);
+        tambahAnak(induk, std::make_shared<Simpul>(namaBaru, h, st, sp));
     }
     else
     {
-        std::string nama;
-        std::cout << "Nama " << tipeSimpul << ": ";
-        std::getline(std::cin, nama);
-        if (nama.empty())
-            return false;
-
-        SimpulPtr simpulBaru = std::make_shared<Simpul>(nama, tipeSimpul);
-        tambahAnak(induk, simpulBaru);
+        tambahAnak(induk, std::make_shared<Simpul>(namaBaru, tipeSimpul));
     }
-
-    std::cout << tipeSimpul << " berhasil ditambahkan.\n";
+    std::cout << "Berhasil menambahkan " << tipeSimpul << ".\n";
     return true;
 }
 
-// Cari Produk
 void cariProduk(SimpulPtr akar, const std::string &katakunci)
 {
-    if (!akar)
-        return;
-
-    std::string kunciKecil = katakunci;
-    std::transform(kunciKecil.begin(), kunciKecil.end(), kunciKecil.begin(), ::tolower);
-
-    std::vector<SimpulPtr> hasil;
     std::vector<SimpulPtr> semua;
     kumpulkanSemuaSimpul(akar, semua);
+    std::string k = katakunci;
+    std::transform(k.begin(), k.end(), k.begin(), ::tolower);
 
+    bool ada = false;
     for (auto &s : semua)
     {
-        if (s->tipe_simpul != "Produk")
-            continue;
-
-        std::string nama = s->data_produk.nama;
-        std::string namaKecil = nama;
-        std::transform(namaKecil.begin(), namaKecil.end(), namaKecil.begin(), ::tolower);
-
-        if (namaKecil.find(kunciKecil) != std::string::npos)
-            hasil.push_back(s);
+        if (s->tipe_simpul == "Produk")
+        {
+            std::string n = s->data_produk.nama;
+            std::transform(n.begin(), n.end(), n.begin(), ::tolower);
+            if (n.find(k) != std::string::npos)
+            {
+                std::cout << "- " << s->data_produk.nama << " (Rp " << s->data_produk.harga << ")\n";
+                ada = true;
+            }
+        }
     }
-
-    if (hasil.empty())
-    {
+    if (!ada)
         std::cout << "Produk tidak ditemukan.\n";
-        return;
-    }
-
-    std::cout << "\nHasil pencarian:\n";
-    int idx = 1;
-    for (auto &p : hasil)
-    {
-        std::cout << idx++ << ". " << p->data_produk.nama
-                  << " - Rp " << p->data_produk.harga
-                  << " (Stok: " << p->data_produk.stok << ")\n";
-    }
 }
 
-// Beli Produk
 bool beliProduk(SimpulPtr produk)
 {
-    if (!produk || produk->tipe_simpul != "Produk")
+    if (!produk || produk->data_produk.stok <= 0)
         return false;
-
-    if (produk->data_produk.stok <= 0)
+    int j;
+    std::cout << "Jumlah: ";
+    if (!(std::cin >> j) || j <= 0 || j > produk->data_produk.stok)
     {
-        std::cout << "Stok habis.\n";
+        std::cin.clear();
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         return false;
     }
-
-    int jumlah;
-    std::cout << "Jumlah beli: ";
-    std::cin >> jumlah;
-    std::cin.ignore();
-
-    if (jumlah <= 0)
-    {
-        std::cout << "Jumlah tidak valid.\n";
-        return false;
-    }
-
-    if (jumlah > produk->data_produk.stok)
-    {
-        std::cout << "Stok tidak cukup. Tersedia: " << produk->data_produk.stok << "\n";
-        return false;
-    }
-
-    produk->data_produk.stok -= jumlah;
-    long long total = produk->data_produk.harga * jumlah;
-
-    std::cout << "\nPembelian berhasil!\n";
-    std::cout << "Produk: " << produk->data_produk.nama << "\n";
-    std::cout << "Jumlah: " << jumlah << "\n";
-    std::cout << "Total : Rp " << total << "\n";
-
+    produk->data_produk.stok -= j;
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     return true;
 }
 
-// Kumpulkan semua simpul
 void kumpulkanSemuaSimpul(SimpulPtr s, std::vector<SimpulPtr> &hasil)
 {
     if (!s)
         return;
     hasil.push_back(s);
-    for (auto &anakSimpul : s->anak)
-        kumpulkanSemuaSimpul(anakSimpul, hasil);
+    for (auto &a : s->anak)
+        kumpulkanSemuaSimpul(a, hasil);
 }
 
-// Simpan tree ke CSV
 void simpanTreeKeCSV(SimpulPtr akar, const std::string &namaFile)
 {
-    std::ofstream berkas(namaFile);
-    if (!berkas.is_open())
-    {
-        std::cout << "Gagal membuka CSV.\n";
+    std::ofstream f(namaFile);
+    if (!f.is_open())
         return;
-    }
-
-    berkas << "Level;Nama;Parent;Harga;Stok;Spesifikasi\n";
-
+    f << "Tipe;Nama;Parent;Harga;Stok;Spec\n";
     std::vector<SimpulPtr> semua;
     kumpulkanSemuaSimpul(akar, semua);
-
     for (auto &s : semua)
     {
-        std::string tipe = s->tipe_simpul;
-        std::string nama =
-            (tipe == "Produk") ? s->data_produk.nama : s->data;
-
-        std::string indukNama = "NULL";
-        if (s->induk)
-            indukNama = (s->induk->tipe_simpul == "Produk")
-                            ? s->induk->data_produk.nama
-                            : s->induk->data;
-
-        std::string harga = (tipe == "Produk") ? std::to_string(s->data_produk.harga) : "";
-        std::string stok = (tipe == "Produk") ? std::to_string(s->data_produk.stok) : "";
-        std::string spec = (tipe == "Produk") ? s->data_produk.spesifikasi : "";
-
-        berkas << tipe << ";" << nama << ";" << indukNama << ";"
-               << harga << ";" << stok << ";" << spec << "\n";
+        std::string p = (s->induk) ? (s->induk->tipe_simpul == "Produk" ? s->induk->data_produk.nama : s->induk->data) : "NULL";
+        std::string n = (s->tipe_simpul == "Produk") ? s->data_produk.nama : s->data;
+        f << s->tipe_simpul << ";" << n << ";" << p << ";"
+          << (s->tipe_simpul == "Produk" ? std::to_string(s->data_produk.harga) : "") << ";"
+          << (s->tipe_simpul == "Produk" ? std::to_string(s->data_produk.stok) : "") << ";"
+          << (s->tipe_simpul == "Produk" ? s->data_produk.spesifikasi : "") << "\n";
     }
 }
 
-// Muat Tree dari CSV
 void muatTreeDariCSV(SimpulPtr akar, const std::string &namaFile)
 {
-    std::ifstream berkas(namaFile);
-    if (!berkas.is_open())
-    {
-        std::cout << "(INFO) CSV tidak ditemukan.\n";
+    std::ifstream f(namaFile);
+    if (!f.is_open())
         return;
-    }
-
-    std::string baris;
-    std::getline(berkas, baris); // header
-
-    std::vector<SimpulPtr> semuaSimpul;
-    semuaSimpul.push_back(akar);
-
-    while (std::getline(berkas, baris))
+    std::string l;
+    std::getline(f, l);
+    std::vector<SimpulPtr> cache = {akar};
+    while (std::getline(f, l))
     {
-        if (baris.empty())
+        if (l.empty())
             continue;
+        std::stringstream ss(l);
+        std::string t, n, p, h, st, sp;
+        std::getline(ss, t, ';');
+        std::getline(ss, n, ';');
+        std::getline(ss, p, ';');
+        std::getline(ss, h, ';');
+        std::getline(ss, st, ';');
+        std::getline(ss, sp, ';');
 
-        std::stringstream ss(baris);
-        std::string level, nama, induk, harga, stok, spec;
-
-        std::getline(ss, level, ';');
-        std::getline(ss, nama, ';');
-        std::getline(ss, induk, ';');
-        std::getline(ss, harga, ';');
-        std::getline(ss, stok, ';');
-        std::getline(ss, spec, ';');
-
-        SimpulPtr simpulInduk = nullptr;
-        if (induk == "NULL")
+        SimpulPtr parent = nullptr;
+        for (auto it = cache.rbegin(); it != cache.rend(); ++it)
         {
-            simpulInduk = akar;
-        }
-        else
-        {
-            for (auto it = semuaSimpul.rbegin(); it != semuaSimpul.rend(); ++it)
+            std::string nC = ((*it)->tipe_simpul == "Produk") ? (*it)->data_produk.nama : (*it)->data;
+            if (nC == p)
             {
-                std::string namaSimpul = ((*it)->tipe_simpul == "Produk")
-                                             ? (*it)->data_produk.nama
-                                             : (*it)->data;
-
-                std::string namaKecil = namaSimpul;
-                std::string indukKecil = induk;
-                std::transform(namaKecil.begin(), namaKecil.end(), namaKecil.begin(), ::tolower);
-                std::transform(indukKecil.begin(), indukKecil.end(), indukKecil.begin(), ::tolower);
-
-                if (namaKecil == indukKecil)
-                {
-                    simpulInduk = *it;
-                    break;
-                }
+                parent = *it;
+                break;
             }
-
-            if (!simpulInduk)
-                simpulInduk = akar;
         }
+        if (!parent)
+            parent = akar;
 
-        if (level == "Root")
+        if (t == "Root")
+            akar->data = n;
+        else if (t == "Produk")
         {
-            akar->data = nama;
-        }
-        else if (level == "Produk")
-        {
-            SimpulPtr simpulBaru = std::make_shared<Simpul>(nama,
-                                                           std::stoll(harga),
-                                                           std::stoi(stok),
-                                                           spec);
-            tambahAnak(simpulInduk, simpulBaru);
-            semuaSimpul.push_back(simpulBaru);
+            auto sB = std::make_shared<Simpul>(n, std::stoll(h), std::stoi(st), sp);
+            tambahAnak(parent, sB);
+            cache.push_back(sB);
         }
         else
         {
-            SimpulPtr simpulBaru = std::make_shared<Simpul>(nama, level);
-            tambahAnak(simpulInduk, simpulBaru);
-            semuaSimpul.push_back(simpulBaru);
+            auto sB = std::make_shared<Simpul>(n, t);
+            tambahAnak(parent, sB);
+            cache.push_back(sB);
         }
     }
 }
