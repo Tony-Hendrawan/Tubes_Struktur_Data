@@ -16,28 +16,62 @@ void tambahAnak(SimpulPtr induk, SimpulPtr anak)
     }
 }
 
-// Menampilkan Tree
-void tampilkanTree(SimpulPtr simpul, int level)
+// Menampilkan Tree dengan struktur horizontal
+void tampilkanTree(SimpulPtr simpul, int level, std::string awalan, bool terakhir)
 {
     if (!simpul)
         return;
 
-    std::string spasi(level * 4, ' ');
+    // Tampilkan awalan dan koneksi
+    std::cout << awalan;
 
+    if (level > 0)
+    {
+        if (terakhir)
+            std::cout << "+-- ";
+        else
+            std::cout << "+-- ";
+    }
+
+    // Tampilkan data simpul
     if (simpul->tipe_simpul == "Produk")
     {
-        std::cout << spasi << "- [PRODUK] " << simpul->data_produk.nama
+        std::cout << "[PRODUK] " << simpul->data_produk.nama
                   << " (Rp " << simpul->data_produk.harga
                   << ", Stok: " << simpul->data_produk.stok
-                  << ") Spec: " << simpul->data_produk.spesifikasi << "\n";
+                  << ", Spec: " << simpul->data_produk.spesifikasi << ")\n";
+    }
+    else if (simpul->tipe_simpul == "Root")
+    {
+        std::cout << "[ROOT] " << simpul->data << "\n";
     }
     else
     {
-        std::cout << spasi << "[" << simpul->tipe_simpul << "] " << simpul->data << "\n";
+        std::cout << "[" << simpul->tipe_simpul << "] " << simpul->data << "\n";
     }
 
-    for (auto &anakSimpul : simpul->anak)
-        tampilkanTree(anakSimpul, level + 1);
+    // Siapkan awalan untuk anak
+    std::string awalanBaru = awalan;
+    if (level > 0)
+    {
+        if (terakhir)
+            awalanBaru += "    ";
+        else
+            awalanBaru += "|   ";
+    }
+
+    // Tampilkan semua anak
+    for (size_t i = 0; i < simpul->anak.size(); i++)
+    {
+        bool anakTerakhir = (i == simpul->anak.size() - 1);
+        tampilkanTree(simpul->anak[i], level + 1, awalanBaru, anakTerakhir);
+    }
+}
+
+// Overload untuk pemanggilan sederhana
+void tampilkanTree(SimpulPtr simpul, int level)
+{
+    tampilkanTree(simpul, 0, "", true);
 }
 
 // Mencari Simpul
