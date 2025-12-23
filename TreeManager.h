@@ -7,6 +7,7 @@
 // Manajemen tree
 void tambahAnak(SimpulPtr induk, SimpulPtr anak);
 void tampilkanTree(SimpulPtr simpul, int level = 0);
+void tampilkanTree(SimpulPtr simpul, int level, std::string awalan, bool terakhir);
 SimpulPtr cariSimpul(SimpulPtr akar, const std::string &target);
 bool hapusSimpul(SimpulPtr akar, const std::string &target);
 void editSimpul(SimpulPtr simpul);
